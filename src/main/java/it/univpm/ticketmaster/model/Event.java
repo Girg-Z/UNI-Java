@@ -20,7 +20,7 @@ public class Event {
         this.kind = kind;
     }
 
-    
+
     public String getId() {
         return this.id;
     }
