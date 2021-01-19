@@ -2,6 +2,8 @@ package it.univpm.ticketmaster.model;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.Instant;
@@ -10,13 +12,15 @@ import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
+
 import it.univpm.ticketmaster.helper.HttpHelper;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class EventRepository {
     private static final String BASE_URL = "https://app.ticketmaster.com/discovery/v2/events.json";
-    private static final String API_KEY = ""; // Todo: Move this to a configuration or env file
+    private static final String API_KEY = "V3cp8w7Dn60dMykxGNFoAbOL6KtD8L07"; // Todo: Move this to a configuration or env file
 
     private static EventRepository instance;
     private final List<Event> eventList = new ArrayList<>();
@@ -33,6 +37,7 @@ public class EventRepository {
     }
 
     public void loadData() {
+        String[] countryList = getCountryList();
         String url = BASE_URL + "?apikey=" + API_KEY + "&size=200";
         String jsonString = HttpHelper.get(url);
         JSONObject parsedData = new JSONObject(jsonString);
@@ -95,5 +100,25 @@ public class EventRepository {
             e.printStackTrace();
         }
         return matchList;
+    }
+
+    // Todo: Move
+    private Properties getConfiguration (){
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        Properties properties = new Properties();
+        try {
+            InputStream resourceStream = loader.getResourceAsStream("application.properties");
+            properties.load(resourceStream);
+            return properties;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return properties;
+    }
+
+    // Todo: Move
+    private String[] getCountryList() {
+        Properties properties = getConfiguration();
+        return properties.getProperty("ticketmaster.countryList").split(",");
     }
 }
