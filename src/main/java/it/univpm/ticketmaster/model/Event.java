@@ -26,7 +26,7 @@ public class Event {
         this.kind = kind;
     }
 
-    public String getMetaData(){
+    public static String getMetaData(){
         Field[] fields = Event.class.getDeclaredFields();
         JSONArray ja = new JSONArray();
         for (int i=0;i<fields.length;i++){
@@ -56,7 +56,7 @@ public class Event {
                 attributo2 = " genere evento ";
                 break;
             };
-            attributo3 = (String) field.getType().getSimpleName();
+            attributo3 = (String) field.getType().getSimpleName(); 
         //    array[i] = new MetaData(attributo1,attributo2,attributo3);
             JSONObject jo = new JSONObject();
             jo.put("Alias", attributo1);

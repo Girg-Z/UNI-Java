@@ -28,10 +28,8 @@ public class TicketmasterApplication {
             Instant instant = Instant.from(temporalAccessor);
             Date startDate = Date.from(instant);
 		e = new Event  ("12we","evento1","rock",startDate,startDate,"vffvfv","fvbgg");
-	//	String a= e.getMetaData();
-	//	System.out.println(e.getMetaData());
+		System.out.println("CDSfsdfdsfdsdffdfsd");
 
-		System.out.println(e.getMetaData());
 		
 		SpringApplication.run(TicketmasterApplication.class, args);
 	}
