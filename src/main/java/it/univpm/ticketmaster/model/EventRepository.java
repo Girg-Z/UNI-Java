@@ -13,9 +13,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-
 import it.univpm.ticketmaster.helper.HttpHelper;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class EventRepository {
@@ -38,42 +38,61 @@ public class EventRepository {
 
     public void loadData() {
         String[] countryList = getCountryList();
-        String url = BASE_URL + "?apikey=" + API_KEY + "&size=200";
-        String jsonString = HttpHelper.get(url);
+        for (String country : countryList) {
+            String url = BASE_URL + "?apikey=" + API_KEY + "&size=200";
+            url += "&countryCode=" + country;
+            loadDataFromPages(url, country, 0, true);
+        }
+    }
+
+    private void loadDataFromPages(String url,String country, int pageNumber, boolean iterate) {
+        String jsonString = HttpHelper.get(url + "&page=" + pageNumber);
         JSONObject parsedData = new JSONObject(jsonString);
-        JSONArray jsonEventList = parsedData.getJSONObject("_embedded").getJSONArray("events");
 
-        for (int i = 0; i < jsonEventList.length(); i++) {
-            JSONObject jsonEvent = jsonEventList.getJSONObject(i);
+        if(!parsedData.isNull("_embedded")){
+            JSONArray jsonEventList = parsedData.getJSONObject("_embedded").getJSONArray("events");
+            for (int i = 0; i < jsonEventList.length(); i++) {
+                try {
+                    JSONObject jsonEvent = jsonEventList.getJSONObject(i);
 
-            // Convert ISO 8601 dateTime String to Date Object
-            TemporalAccessor temporalAccessor = DateTimeFormatter.ISO_INSTANT.parse(
-                    jsonEvent.getJSONObject("dates").getJSONObject("start").getString("dateTime")
-            );
-            Instant instant = Instant.from(temporalAccessor);
-            Date startDate = Date.from(instant);
+                    // Convert ISO 8601 dateTime String to Date Object
+                    TemporalAccessor temporalAccessor = DateTimeFormatter.ISO_INSTANT.parse(
+                            jsonEvent.getJSONObject("dates").getJSONObject("start").getString("dateTime")
+                    );
+                    Instant instant = Instant.from(temporalAccessor);
+                    Date startDate = Date.from(instant);
 
-            Date endDate;
-            if (jsonEvent.getJSONObject("dates").isNull("end")) { // If end date is null than endDate = StartDate
-                endDate = startDate; // No need to clone
-            } else {
-                temporalAccessor = DateTimeFormatter.ISO_INSTANT.parse(
-                        jsonEvent.getJSONObject("dates").getJSONObject("end").getString("dateTime")
-                );
-                instant = Instant.from(temporalAccessor);
-                endDate = Date.from(instant);
+                    Date endDate;
+                    if (jsonEvent.getJSONObject("dates").isNull("end")) { // If end date is null than endDate = StartDate
+                        endDate = startDate; // No need to clone
+                    } else {
+                        temporalAccessor = DateTimeFormatter.ISO_INSTANT.parse(
+                                jsonEvent.getJSONObject("dates").getJSONObject("end").getString("dateTime")
+                        );
+                        instant = Instant.from(temporalAccessor);
+                        endDate = Date.from(instant);
+                    }
+
+                    Event event = new Event(
+                            jsonEvent.getString("id"),
+                            jsonEvent.getString("name"),
+                            jsonEvent.getString("type"),
+                            startDate,
+                            endDate,
+                            jsonEvent.getJSONArray("classifications").getJSONObject(0).getJSONObject("segment").getString("name"),
+                            jsonEvent.getJSONArray("classifications").getJSONObject(0).getJSONObject("genre").getString("name"),
+                            country
+                    );
+                    this.eventList.add(event);
+                } catch (JSONException e) {
+                }
             }
+        }
 
-            Event event = new Event(
-                    jsonEvent.getString("id"),
-                    jsonEvent.getString("name"),
-                    jsonEvent.getString("type"),
-                    startDate,
-                    endDate,
-                    jsonEvent.getJSONArray("classifications").getJSONObject(0).getJSONObject("segment").getString("name"),
-                    jsonEvent.getJSONArray("classifications").getJSONObject(0).getJSONObject("genre").getString("name")
-            );
-            this.eventList.add(event);
+        if (iterate) {
+            if (pageNumber < parsedData.getJSONObject("page").getInt("totalPages") && pageNumber < 4) { // API Limits: Max paging depth (page * size) must be less than 1000
+                loadDataFromPages(url,country, pageNumber + 1, true);
+            }
         }
     }
 
@@ -85,14 +104,14 @@ public class EventRepository {
     //Todo: Add Exceptions, maybe don't use this method at all
     public List<Event> filterByField(String field, String value) {
 
-        List<Event> matchList = new ArrayList<Event>();
+        List<Event> matchList = new ArrayList<>();
         try {
             PropertyDescriptor pd = new PropertyDescriptor(field, Event.class);
             Method getter = pd.getReadMethod();
 
             for (Event event : eventList) {
                 String objectValue = (String) getter.invoke(event);
-                if (value.equals(objectValue)){
+                if (value.equals(objectValue)) {
                     matchList.add(event);
                 }
             }
@@ -103,7 +122,7 @@ public class EventRepository {
     }
 
     // Todo: Move
-    private Properties getConfiguration (){
+    private Properties getConfiguration() {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         Properties properties = new Properties();
         try {
