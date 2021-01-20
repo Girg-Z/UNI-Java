@@ -15,8 +15,9 @@ public class Event {
     private Date endDataTime;
     private String segment;
     private String kind; // GENERE
+    private String country;
 
-    public Event(String id, String name, String type, Date startdate, Date startdate2, String segment, String kind) {
+    public Event(String id, String name, String type, Date startdate, Date startdate2, String segment, String kind,String country) {
         this.id = id;
         this.name = name;
         this.type = type;
@@ -24,6 +25,7 @@ public class Event {
         this.endDataTime =  startdate2;
         this.segment = segment;
         this.kind = kind;
+        this.country=country;
     }
 
     public static String getMetaData(){
@@ -54,6 +56,9 @@ public class Event {
                 break;
                 case 6:
                 attributo2 = " genere evento ";
+                break;
+                case 7:
+                attributo2 = " Stato ";
                 break;
             };
             attributo3 = (String) field.getType().getSimpleName(); 
