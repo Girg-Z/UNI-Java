@@ -17,6 +17,8 @@ public class Event {
     private String kind; // GENERE
     private String country;
 
+    
+
     public Event(String id, String name, String type, Date startdate, Date startdate2, String segment, String kind,String country) {
         this.id = id;
         this.name = name;
@@ -74,10 +76,22 @@ public class Event {
       //  var myJSON = JSON.stringify(ja);
         String str = ja.toString();
         return str;
+    
         
     }
 
-   
+    public String getType() {
+        return this.type;
+    }
+
+
+    public String getCountry() {
+        return this.country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
 
     public String getId() {
         return this.id;
@@ -134,16 +148,6 @@ public class Event {
     public void setKind(String kind) {
         this.kind = kind;
     }
-
-
-	public static String getDeclaretField() {
-		return null;
-	}
-
-
-	public static Field[] getDeclaredFields() {
-		return null;
-	}
 
 
 

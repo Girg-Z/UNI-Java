@@ -136,7 +136,7 @@ public class EventRepository {
     }
 
     // Todo: Move
-    private String[] getCountryList() {
+    public String[] getCountryList() {
         Properties properties = getConfiguration();
         return properties.getProperty("ticketmaster.countryList").split(",");
     }
