@@ -21,149 +21,48 @@ import it.univpm.ticketmaster.model.EventRepository;
 
 @RestController
 public class EventController {
-    private  EventRepository eventRepository;
+    private final EventRepository eventRepository;
 
 
     public EventController() {
         this.eventRepository = EventRepository.getInstance();
-        this.eventRepository.loadData();
     }
     
         
     
         @GetMapping("/stats")
-        public ResponseEntity<String> numeroeventi() {
+        public ResponseEntity<String> stats() {
             final HttpHeaders httpHeaders= new HttpHeaders();
             httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
             List <Event> eventList = eventRepository.getAll();
             String[] countries = eventRepository.getCountryList();
-            int[] coutriesCouter = new int [countries.length];
-            boolean countryAlreadyInArray = false;
-            int coutryIndex = 0;
+            int[] countriesCounter = new int [countries.length];
+            List<Map<String,Integer>> genreMapsList = new ArrayList<>();
 
-            List<Map<String,Integer>> genreMapsList = new ArrayList<Map<String,Integer>>();
+            for (String ignored : countries) {
+                genreMapsList.add(new HashMap<>());
+            }
 
             for(int i=0; i<eventList.size() ;i++){
                 final String genre = eventList.get(i).getKind();
                 for(int j=0;j<countries.length;j++){
                     if(eventList.get(i).getCountry().equals(countries[j])) {
-                        countryAlreadyInArray = true;
-                        coutryIndex = j;
+                        countriesCounter[j]++;
+                        genreMapsList.get(j).merge(genre, 1, Integer::sum);
                     }
-                   
-
                 }
-                if (countryAlreadyInArray){
-                    coutriesCouter[coutryIndex]++;
-                } else{
-                    int x=0;
-                    while(countries[x] != null){
-                        x++;
-                    }
-                    coutryIndex = x;
-                    countries[x]=eventList.get(i).getCountry();
-                    coutriesCouter[x]++;
-                    genreMapsList.add(new HashMap<String, Integer>());
-                }
-                countryAlreadyInArray = false;
-
-                genreMapsList.get(coutryIndex).merge(genre, 1, Integer::sum);
             }
 
             JSONArray ja = new JSONArray();
             for(int i=0;i<countries.length;i++){
                 JSONObject jo = new JSONObject();
                 jo.put("country", countries[i]);
-                jo.put("numerOfEvents", coutriesCouter[i]);
-                jo.put("test", genreMapsList.get(i));
+                jo.put("numberOfEvents", countriesCounter[i]);
+                jo.put("eventsByGenre", genreMapsList.get(i));
                 ja.put(jo);
             }
             String str = ja.toString();
-            return new ResponseEntity<String>(str,httpHeaders, HttpStatus.OK);
-        } 
-
-/*
-        @GetMapping("/stats")
-        public ResponseEntity<String> numeroeventi() {
-            final HttpHeaders httpHeaders= new HttpHeaders();
-            httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-            List <Event> eventList = eventRepository.getAll();
-            String[] countries= eventRepository.getCountryList();
-            int[] coutriesCouter=new int [countries.length];
-            int countryAlreadyInArray=0;
-            int controller1=0;
-            for(int i=0; i<eventList.size() ;i++){
-                for(int j=0;j<countries.length;j++){
-                    if(eventList.get(i).getCountry().equals(countries[j])) {
-                        countryAlreadyInArray=1;
-                        controller1=j;
-                    }
-                   
-
-                }
-                if (countryAlreadyInArray==1){
-                    coutriesCouter[controller1]++;
-                } else{
-                    int x=0;
-                    while(countries[x] != null){
-                        x++;
-                    }
-                    countries[x]=eventList.get(i).getCountry();
-                    coutriesCouter[x]++;
-                }
-                countryAlreadyInArray=0;
-            }
-            JSONArray ja = new JSONArray();
-            for(int i=0;i<countries.length;i++){
-                JSONObject jo = new JSONObject();
-                jo.put("country", countries[i]);
-                jo.put("numerOfEvents", coutriesCouter[i]);
-                ja.put(jo);
-            }
-            String str = ja.toString();
-            return new ResponseEntity<String>(str,httpHeaders, HttpStatus.OK);
-        } 
-
-        @GetMapping("/stats1")
-        public void reportkinds(){
-            final HttpHeaders httpHeaders= new HttpHeaders();
-            httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-            List <Event> eventList = eventRepository.getAll();
-            List<Map<String,Integer>> genreMapsList = new ArrayList<Map<String,Integer>>();
-
-            String[] countries= eventRepository.getCountryList();
-            int[] coutriesCouterGenere=new int [countries.length];
-            boolean countryAlreadyInArray = false;
-            int controller1=0;            
-            for(int i=0; i<eventList.size() ;i++){
-                final String genre = eventList.get(i).getKind();
-                for(int j=0;j<countries.length;j++){
-                    if(eventList.get(i).getCountry().equals(countries[j])) {
-                        countryAlreadyInArray = true;
-                        controller1=j;
-                    }
-                    
-
-                }
-                if (countryAlreadyInArray){
-                    coutriesCouterGenere[controller1]++;
-                } else{
-                    int x=0;
-                    while(countries[x] != null){
-                        x++;
-                    }
-                    countries[x]=eventList.get(i).getCountry();
-                    coutriesCouterGenere[x]++;
-
-                    genreMapsList.add(new HashMap<String, Integer>());
-
-                }
-                countryAlreadyInArray = false;
-
-                if(genreMapsList.get())
-
-            }
+            return new ResponseEntity<>(str, httpHeaders, HttpStatus.OK);
         }
-*/
- }
+}
