@@ -11,20 +11,20 @@ public class Event {
     private String id;
     private String name;
     private String type;
-    private Date startDataTime;
-    private Date endDataTime;
+    private Date startDateTime;
+    private Date endDateTime;
     private String segment;
     private String kind; // GENERE
     private String country;
 
     
 
-    public Event(String id, String name, String type, Date startdate, Date startdate2, String segment, String kind,String country) {
+    public Event(String id, String name, String type, Date startDate, Date endDate, String segment, String kind,String country) {
         this.id = id;
         this.name = name;
         this.type = type;
-        this.startDataTime =  startdate;
-        this.endDataTime =  startdate2;
+        this.startDateTime =  startDate;
+        this.endDateTime =  endDate;
         this.segment = segment;
         this.kind = kind;
         this.country=country;
@@ -117,20 +117,20 @@ public class Event {
         this.type = type;
     }
 
-    public Date getStartDataTime() {
-        return this.startDataTime;
+    public Date getStartDateTime() {
+        return this.startDateTime;
     }
 
-    public void setStartDataTime(Date startDataTime) {
-        this.startDataTime = startDataTime;
+    public void setStartDateTime(Date startDateTime) {
+        this.startDateTime = startDateTime;
     }
 
-    public Date getEndDataTime() {
-        return this.endDataTime;
+    public Date getEndDateTime() {
+        return this.endDateTime;
     }
 
-    public void setEndDataTime(Date endDataTime) {
-        this.endDataTime = endDataTime;
+    public void setEndDateTime(Date endDateTime) {
+        this.endDateTime = endDateTime;
     }
 
     public String getSegment() {
