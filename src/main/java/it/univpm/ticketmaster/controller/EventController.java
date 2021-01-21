@@ -1,5 +1,6 @@
 package it.univpm.ticketmaster.controller;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -35,8 +36,6 @@ public class EventController {
     
         @GetMapping("/stats")
         public ResponseEntity<String> stats() {
-            getDatesArray();
-
             final HttpHeaders httpHeaders= new HttpHeaders();
             httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
@@ -45,8 +44,12 @@ public class EventController {
             int[] countriesCounter = new int [countries.length];
             List<Map<String,Integer>> genreMapsList = new ArrayList<>();
 
+            final int period = 3;
+            List<int[]> eventsByPeriod = new ArrayList<>();
+
             for (String ignored : countries) {
                 genreMapsList.add(new HashMap<>());
+                eventsByPeriod.add(new int[(getDatesArray().length / period) + 1]);
             }
 
             for(int i=0; i<eventList.size() ;i++){
@@ -55,6 +58,8 @@ public class EventController {
                     if(eventList.get(i).getCountry().equals(countries[j])) {
                         countriesCounter[j]++;
                         genreMapsList.get(j).merge(genre, 1, Integer::sum);
+                        int periodNumber = getEventPeriodNumber(eventList.get(i), period);
+                        eventsByPeriod.get(j)[periodNumber]++;
                     }
                 }
             }
@@ -93,12 +98,28 @@ public class EventController {
         long dateDiff = last.getTime() - first.getTime();
         int daysNumber = (int) TimeUnit.DAYS.convert(dateDiff, TimeUnit.MILLISECONDS);
         Date[] datesArray = new Date[daysNumber];
+
         datesArray[0] = first;
         for (int i = 1; i < daysNumber; i++) {
             datesArray[i] = Date.from(datesArray[i-1].toInstant().plus(1, ChronoUnit.DAYS));
         }
-        System.out.println(Arrays.toString(datesArray));
-        return null;        
+        return datesArray;
+    }
+
+    private boolean compareDateWhitoutTime(Date date1, Date date2){
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        return sdf.format(date1).equals(sdf.format(date2));
+    }
+
+    private int getEventPeriodNumber(Event event, int period){
+        Date[] datesArray = getDatesArray();
+        for (int i = 0; i < datesArray.length; i++) {
+            if (compareDateWhitoutTime(datesArray[i], event.getStartDateTime())){
+                return i / period;
+            }
+        }
+
+        return 0; // Todo: Add runtime exception
     }
     
 }
