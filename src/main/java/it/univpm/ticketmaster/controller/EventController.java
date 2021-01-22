@@ -6,16 +6,13 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.HashMap;
 import java.util.Date;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -31,20 +28,30 @@ public class EventController {
     public EventController() {
         this.eventRepository = EventRepository.getInstance();
     }
-    
-        
-    
+
+
+
         @GetMapping("/stats")
-        public ResponseEntity<String> stats() {
+        public ResponseEntity<String> stats(@RequestParam(required = false) String filter) {
             final HttpHeaders httpHeaders= new HttpHeaders();
             httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
-            List <Event> eventList = eventRepository.getAll();
+            final List <Event> eventList = eventRepository.getAll();
             String[] countries = eventRepository.getCountryList();
+            int period = 30;
+
+            if (filter != null){
+                JSONObject parsedFilter = new JSONObject(filter);
+                if(!parsedFilter.isNull("countries")){
+                    countries = JSONArrayToStringArray(parsedFilter.getJSONArray("countries"));
+                }
+                if(!parsedFilter.isNull("period")){
+                    period = parsedFilter.getInt("period");
+                }
+            }
+
             int[] countriesCounter = new int [countries.length];
             List<Map<String,Integer>> genreMapsList = new ArrayList<>();
-
-            final int period = 3;
             List<int[]> eventsByPeriod = new ArrayList<>();
 
             for (String ignored : countries) {
@@ -68,15 +75,15 @@ public class EventController {
                 JSONObject jo = new JSONObject();
                 int min = eventsByPeriod.get(i)[0];
                 int max = eventsByPeriod.get(i)[0];
-                int minPeriod=0,maxPeriod=0;
+//                int minPeriod=0,maxPeriod=0;
                 for(int x=0;x<eventsByPeriod.get(i).length ;x++){
                     if(eventsByPeriod.get(i)[x]<min){
-                        min= eventsByPeriod.get(i)[x];  
-                        minPeriod=x;
+                        min= eventsByPeriod.get(i)[x];
+//                        minPeriod=x;
                     }
                     if(eventsByPeriod.get(i)[x]>max){
                         max= eventsByPeriod.get(i)[x];
-                        maxPeriod=x;
+//                        maxPeriod=x;
                     }
                 }
                 jo.put("country", countries[i]);
@@ -97,7 +104,7 @@ public class EventController {
     private Date[] getDatesArray() {
         // Find first and last date
         Date first = null;
-        Date last = null; 
+        Date last = null;
         for (Event event : eventRepository.getAll()) {
             if (first == null){
                 first = event.getStartDateTime();
@@ -140,7 +147,7 @@ public class EventController {
         return 0; // Todo: Add runtime exception
     }
 
-    
+
     @GetMapping("/events")
     public ResponseEntity<String> events() {
         final HttpHeaders httpHeaders= new HttpHeaders();
@@ -151,11 +158,19 @@ public class EventController {
         for(int i=0; i<eventList.size() ;i++){
             ja.put(eventList.get(i).toJsonObject());
         }
-        
+
         String str=ja.toString();
         return new ResponseEntity<>(str, httpHeaders, HttpStatus.OK);
 
     }
 
+    // Todo: Move to jsonHelper
+    private String[] JSONArrayToStringArray (JSONArray jsonArray){
+        String[] array = new String[jsonArray.length()];
+        for(int i = 0; i < jsonArray.length(); i++){
+            array[i] = jsonArray.getString(i);
+        }
+        return  array;
+    }
 
 }
