@@ -80,6 +80,23 @@ public class Event {
         
     }
 
+    public JSONObject toJsonObject(){
+        JSONObject jo = new JSONObject();
+        jo.put("country", country);
+        jo.put("id", id);
+        jo.put("name", name);
+        jo.put("Type", type);
+        jo.put("startDateTime", startDateTime);
+        jo.put("endDateTime", endDateTime);
+        jo.put("segment", segment);
+        jo.put("kind", kind);
+        jo.put("country", country);
+
+        
+
+        return jo;
+    }
+
     public String getType() {
         return this.type;
     }

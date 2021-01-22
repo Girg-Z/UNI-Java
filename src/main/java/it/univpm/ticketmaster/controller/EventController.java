@@ -79,15 +79,13 @@ public class EventController {
                         maxPeriod=x;
                     }
                 }
-                System.out.println("min"+min) ;  
-                System.out.println("max"+max) ; 
                 jo.put("country", countries[i]);
-                jo.put("minimum of event", min);
+                jo.put("minimumOfEvent", min);
               //  jo.put("min period", minPeriod);
               //  jo.put("max period", maxPeriod);
-                jo.put("number of period", eventsByPeriod.get(i).length);
-                jo.put("maximum of event", max);
-                jo.put("media",countriesCounter[i]/ eventsByPeriod.get(i).length);
+                jo.put("numberOfPeriod", eventsByPeriod.get(i).length);
+                jo.put("maximumOfEvent", max);
+                jo.put("average",countriesCounter[i]/ eventsByPeriod.get(i).length);
                 jo.put("numberOfEvents", countriesCounter[i]);
                 jo.put("eventsByGenre", genreMapsList.get(i));
                 ja.put(jo);
@@ -141,5 +139,23 @@ public class EventController {
 
         return 0; // Todo: Add runtime exception
     }
+
     
+    @GetMapping("/events")
+    public ResponseEntity<String> events() {
+        final HttpHeaders httpHeaders= new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+
+        List <Event> eventList = eventRepository.getAll();
+        JSONArray ja= new JSONArray();
+        for(int i=0; i<eventList.size() ;i++){
+            ja.put(eventList.get(i).toJsonObject());
+        }
+        
+        String str=ja.toString();
+        return new ResponseEntity<>(str, httpHeaders, HttpStatus.OK);
+
+    }
+
+
 }
