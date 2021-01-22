@@ -63,13 +63,12 @@ public class EventController {
                     }
                 }
             }
-            int c;
             JSONArray ja = new JSONArray();
             for(int i=0;i<countries.length;i++){
                 JSONObject jo = new JSONObject();
                 int min = eventsByPeriod.get(i)[0];
                 int max = eventsByPeriod.get(i)[0];
-                int minPeriod=0,maxPeriod=0,numberOfPeriod=0;
+                int minPeriod=0,maxPeriod=0;
                 for(int x=0;x<eventsByPeriod.get(i).length ;x++){
                     if(eventsByPeriod.get(i)[x]<min){
                         min= eventsByPeriod.get(i)[x];  
@@ -79,17 +78,16 @@ public class EventController {
                         max= eventsByPeriod.get(i)[x];
                         maxPeriod=x;
                     }
-                    numberOfPeriod++;
                 }
                 System.out.println("min"+min) ;  
                 System.out.println("max"+max) ; 
                 jo.put("country", countries[i]);
                 jo.put("minimum of event", min);
-                jo.put("min period", minPeriod);
-                jo.put("max period", maxPeriod);
-                jo.put("number of period", numberOfPeriod);
+              //  jo.put("min period", minPeriod);
+              //  jo.put("max period", maxPeriod);
+                jo.put("number of period", eventsByPeriod.get(i).length);
                 jo.put("maximum of event", max);
-                jo.put("media",countriesCounter[i]/ numberOfPeriod);
+                jo.put("media",countriesCounter[i]/ eventsByPeriod.get(i).length);
                 jo.put("numberOfEvents", countriesCounter[i]);
                 jo.put("eventsByGenre", genreMapsList.get(i));
                 ja.put(jo);
