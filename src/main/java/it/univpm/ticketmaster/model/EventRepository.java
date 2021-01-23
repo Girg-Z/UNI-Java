@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+
+import it.univpm.ticketmaster.exception.HttpException;
 import it.univpm.ticketmaster.helper.HttpHelper;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,7 +22,8 @@ import org.json.JSONObject;
 
 public class EventRepository {
     private static final String BASE_URL = "https://app.ticketmaster.com/discovery/v2/events.json";
-    private static final String API_KEY = "V3cp8w7Dn60dMykxGNFoAbOL6KtD8L07"; // Todo: Move this to a configuration or env file
+    private static final String API_KEY = "V3cp8w7Dn60dMykxGNFoAbOL6KtD8L07"; // Todo: Move this to a configuration or
+                                                                              // env file
 
     private static EventRepository instance;
     private final List<Event> eventList = new ArrayList<>();
@@ -45,8 +48,12 @@ public class EventRepository {
         }
     }
 
-    private void loadDataFromPages(String url,String country, int pageNumber, boolean iterate) {
-        String jsonString = HttpHelper.get(url + "&page=" + pageNumber);
+    private void loadDataFromPages(String url, String country, int pageNumber, boolean iterate) {
+        try{
+        String jsonString;
+        
+        jsonString = HttpHelper.get(url + "&page=" + pageNumber);
+       
         JSONObject parsedData = new JSONObject(jsonString);
 
         if(!parsedData.isNull("_embedded")){
@@ -94,6 +101,10 @@ public class EventRepository {
                 loadDataFromPages(url,country, pageNumber + 1, true);
             }
         }
+    } catch (HttpException e1) {
+        // TODO Auto-generated catch block
+        e1.printStackTrace();
+    }
     }
 
     public List<Event> getAll() {

@@ -4,15 +4,19 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+
+import it.univpm.ticketmaster.exception.HttpException;
+import it.univpm.ticketmaster.*;
 
 
 
 
 public class HttpHelper{
     
-    public static String get (String url){
+    public static String get (String url) throws HttpException{
 		String data = "";
 		String line = "";
         try {
@@ -31,10 +35,14 @@ public class HttpHelper{
 			   in.close();
 			 }
 			
-		} catch (IOException e) {
-			e.printStackTrace();
+			
+			int code = ((HttpURLConnection) openConnection).getResponseCode();
+			if(code!=200){
+				throw new HttpException(code);
+			}
+			
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new HttpException(e.getMessage());
         }
 		return data;
     }
