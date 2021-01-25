@@ -1,22 +1,26 @@
 package it.univpm.ticketmaster.controller;
 
 import java.text.SimpleDateFormat;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.HashMap;
-import java.util.Date;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
+
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+
+import it.univpm.ticketmaster.exception.FilterException;
 import it.univpm.ticketmaster.model.Event;
 import it.univpm.ticketmaster.model.EventRepository;
 
@@ -31,10 +35,7 @@ public class EventController {
 
 
 
-        @GetMapping("/stats")
-        public ResponseEntity<String> stats(@RequestParam(required = false) String filter) {
-            final HttpHeaders httpHeaders= new HttpHeaders();
-            httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+        public String stats(String filter) throws FilterException {
 
             final List <Event> eventList = eventRepository.getAll();
             String[] countries = eventRepository.getCountryList();
@@ -46,7 +47,13 @@ public class EventController {
                     countries = JSONArrayToStringArray(parsedFilter.getJSONArray("countries"));
                 }
                 if(!parsedFilter.isNull("period")){
+                    try{
                     period = parsedFilter.getInt("period");
+                    if (period<=0 || period>365) throw new FilterException(
+                    "The period must be greater than 0 and less than 365");
+                    } catch(JSONException e){
+                        throw new FilterException("The period must be integer");
+                    }
                 }
             }
 
@@ -98,7 +105,7 @@ public class EventController {
                 ja.put(jo);
             }
             String str = ja.toString();
-            return new ResponseEntity<>(str, httpHeaders, HttpStatus.OK);
+            return str;
         }
 
     private Date[] getDatesArray() {
@@ -148,8 +155,8 @@ public class EventController {
     }
 
 
-    @GetMapping("/events")
-    public ResponseEntity<String> events() {
+    
+    public String events() {
         final HttpHeaders httpHeaders= new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
@@ -160,7 +167,7 @@ public class EventController {
         }
 
         String str=ja.toString();
-        return new ResponseEntity<>(str, httpHeaders, HttpStatus.OK);
+        return str;
 
     }
 
