@@ -1,2 +1,1 @@
-# UNI-Java
-prova
+# Progetto di Diego Manzo e Giorgio Zanchetti

@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import it.univpm.ticketmaster.exception.FilterException;
+import it.univpm.ticketmaster.helper.ConfigurationHelper;
 import it.univpm.ticketmaster.model.Event;
 import it.univpm.ticketmaster.model.EventRepository;
 
@@ -38,7 +39,7 @@ public class EventController {
         public String stats(String filter) throws FilterException {
 
             final List <Event> eventList = eventRepository.getAll();
-            String[] countries = eventRepository.getCountryList();
+            String[] countries = ConfigurationHelper.getCountryList();
             int period = 30;
 
             if (filter != null){

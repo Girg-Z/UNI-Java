@@ -14,7 +14,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import it.univpm.ticketmaster.exception.EventLoadingException;
 import it.univpm.ticketmaster.exception.HttpException;
+import it.univpm.ticketmaster.helper.ConfigurationHelper;
 import it.univpm.ticketmaster.helper.HttpHelper;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,8 +41,8 @@ public class EventRepository {
         return instance;
     }
 
-    public void loadData() {
-        String[] countryList = getCountryList();
+    public void loadData()  throws EventLoadingException {
+        String[] countryList = ConfigurationHelper.getCountryList();
         for (String country : countryList) {
             String url = BASE_URL + "?apikey=" + API_KEY + "&size=200";
             url += "&countryCode=" + country;
@@ -48,7 +50,7 @@ public class EventRepository {
         }
     }
 
-    private void loadDataFromPages(String url, String country, int pageNumber, boolean iterate) {
+    private void loadDataFromPages(String url, String country, int pageNumber, boolean iterate) throws EventLoadingException{
         try{
         String jsonString;
         
@@ -101,10 +103,9 @@ public class EventRepository {
                 loadDataFromPages(url,country, pageNumber + 1, true);
             }
         }
-    } catch (HttpException e1) {
-        // TODO Auto-generated catch block
-        e1.printStackTrace();
-    }
+        } catch (HttpException httpException) {
+            throw new EventLoadingException(httpException.getMessage());
+        }
     }
 
     public List<Event> getAll() {
@@ -132,23 +133,4 @@ public class EventRepository {
         return matchList;
     }
 
-    // Todo: Move
-    private Properties getConfiguration() {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        Properties properties = new Properties();
-        try {
-            InputStream resourceStream = loader.getResourceAsStream("application.properties");
-            properties.load(resourceStream);
-            return properties;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return properties;
-    }
-
-    // Todo: Move
-    public String[] getCountryList() {
-        Properties properties = getConfiguration();
-        return properties.getProperty("ticketmaster.countryList").split(",");
-    }
 }
