@@ -1,5 +1,7 @@
 package it.univpm.ticketmaster.controller;
 
+import javax.naming.ConfigurationException;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -15,19 +17,20 @@ import it.univpm.ticketmaster.model.Event;
 public class ApiController {
     private EventController eventController;
 
-	public ApiController(){
-        this.eventController=new EventController();
+    public ApiController() {
+        this.eventController = new EventController();
     }
 
     @GetMapping("/metadata")
     public ResponseEntity<String> metadata() {
-        final HttpHeaders httpHeaders= new HttpHeaders();
+        final HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-        return new ResponseEntity<String>(Event.getMetaData(),httpHeaders, HttpStatus.OK);
+        return new ResponseEntity<String>(Event.getMetaData(), httpHeaders, HttpStatus.OK);
     }
 
     @GetMapping("/stats")
-    public ResponseEntity<String> stats(@RequestParam(required = false) String filter) throws FilterException {
+    public ResponseEntity<String> stats(@RequestParam(required = false) String filter)
+            throws FilterException, ConfigurationException {
         final HttpHeaders httpHeaders= new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         try{

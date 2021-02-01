@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import javax.naming.ConfigurationException;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,14 +31,11 @@ import it.univpm.ticketmaster.model.EventRepository;
 public class EventController {
     private final EventRepository eventRepository;
 
-
     public EventController() {
         this.eventRepository = EventRepository.getInstance();
     }
 
-
-
-        public String stats(String filter) throws FilterException {
+    public String stats(String filter) throws FilterException, ConfigurationException {
 
             final List <Event> eventList = eventRepository.getAll();
             String[] countries = ConfigurationHelper.getCountryList();

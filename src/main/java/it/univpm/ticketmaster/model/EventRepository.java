@@ -14,6 +14,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import javax.naming.ConfigurationException;
+
 import it.univpm.ticketmaster.exception.EventLoadingException;
 import it.univpm.ticketmaster.exception.HttpException;
 import it.univpm.ticketmaster.helper.ConfigurationHelper;
@@ -41,7 +43,7 @@ public class EventRepository {
         return instance;
     }
 
-    public void loadData()  throws EventLoadingException {
+    public void loadData() throws EventLoadingException, ConfigurationException {
         String[] countryList = ConfigurationHelper.getCountryList();
         for (String country : countryList) {
             String url = BASE_URL + "?apikey=" + API_KEY + "&size=200";
