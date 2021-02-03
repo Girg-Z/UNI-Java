@@ -40,12 +40,11 @@ public class ApiController {
         }
     }
 
-    
     @GetMapping("/events")
-    public ResponseEntity<String> events() {
+    public ResponseEntity<String> events(@RequestParam(required = false) String filter) {
         final HttpHeaders httpHeaders= new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-        return new ResponseEntity<>(eventController.events(), httpHeaders, HttpStatus.OK);
+        return new ResponseEntity<>(eventController.events(filter), httpHeaders, HttpStatus.OK);
     }
 
    

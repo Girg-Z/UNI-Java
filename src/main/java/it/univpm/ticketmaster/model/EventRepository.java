@@ -116,7 +116,7 @@ public class EventRepository {
 
 
     //Todo: Add Exceptions, maybe don't use this method at all
-    public List<Event> filterByField(String field, String value) {
+    public static List<Event> filterByField(String field, String value, List<Event> eventList) {
 
         List<Event> matchList = new ArrayList<>();
         try {
