@@ -1,9 +1,9 @@
 package it.univpm.ticketmaster.controller;
 
-import java.text.SimpleDateFormat;
+
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -84,7 +84,7 @@ public class EventController {
             }
             jo.put("country", countries[i]);
             jo.put("minimumOfEvent", min);
-            jo.put("numberOfPeriod", eventsByPeriod.get(i).length);
+            //jo.put("numberOfPeriod", eventsByPeriod.get(i).length);
             jo.put("maximumOfEvent", max);
             jo.put("average", countriesCounter[i] / eventsByPeriod.get(i).length);
             jo.put("numberOfEvents", countriesCounter[i]);
@@ -95,49 +95,42 @@ public class EventController {
         return str;
     }
 
-    private Date[] getDatesArray() {
+    private LocalDate[] getDatesArray() {
         // Find first and last date
-        Date first = null;
-        Date last = null;
+        LocalDate first = null;
+        LocalDate last = null;
         for (Event event : eventRepository.getAll()) {
             if (first == null) {
-                first = event.getStartDateTime();
-                last = event.getEndDateTime();
+                first = event.getStartDate();
+                last = event.getEndDate();
             } else {
-                if (event.getStartDateTime().before(first)) {
-                    first = event.getStartDateTime();
+                if (event.getStartDate().isBefore(first)) {
+                    first = event.getStartDate();
                 }
-                if (event.getStartDateTime().after(last)) {
-                    last = event.getStartDateTime();
+                if (event.getStartDate().isAfter(last)) {
+                    last = event.getStartDate();
                 }
             }
         }
 
-        long dateDiff = last.getTime() - first.getTime();
-        int daysNumber = (int) TimeUnit.DAYS.convert(dateDiff, TimeUnit.MILLISECONDS);
-        Date[] datesArray = new Date[daysNumber];
+        int daysNumber = (int) ChronoUnit.DAYS.between(first, last);
+        LocalDate[] datesArray = new LocalDate[daysNumber];
 
         datesArray[0] = first;
         for (int i = 1; i < daysNumber; i++) {
-            datesArray[i] = Date.from(datesArray[i - 1].toInstant().plus(1, ChronoUnit.DAYS));
+            datesArray[i] = (datesArray[i - 1].plusDays(1));
         }
         return datesArray;
     }
 
-    private boolean compareDateWhitoutTime(Date date1, Date date2) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-        return sdf.format(date1).equals(sdf.format(date2));
-    }
-
     private int getEventPeriodNumber(Event event, int period) {
-        Date[] datesArray = getDatesArray();
+        LocalDate[] datesArray = getDatesArray();
         for (int i = 0; i < datesArray.length; i++) {
-            if (compareDateWhitoutTime(datesArray[i], event.getStartDateTime())) {
+            if (event.getStartDate().equals(datesArray[i])) {
                 return i / period;
             }
         }
-
-        return 0; // TODO: Add runtime exception
+        return 0;
     }
 
     // Todo: Move to jsonHelper
@@ -151,8 +144,10 @@ public class EventController {
 
     public String events(String filter) {
         List<Event> eventList = eventRepository.getAll();
-        final JSONObject parsedFilter = new JSONObject(filter);
-        eventList = resolveFilter(parsedFilter.toMap(), eventList);
+        if (filter != null) {
+            final JSONObject parsedFilter = new JSONObject(filter);
+            eventList = resolveFilter(parsedFilter.toMap(), eventList);
+        }
 
         final JSONArray jsonArray = new JSONArray();
         for (Event event : eventList) {
@@ -169,14 +164,14 @@ public class EventController {
         if (filterValue instanceof String) { // If filterValue is a string than list need to be filtered by a simple field
             eventList = EventRepository.filterByField(filterKey, (String) filterValue, eventList);
 
-        } else if (filterValue instanceof List) {// If filterValue is a list than is a complex filter like and | or
+        } else if (filterValue instanceof List) {// If filterValue is a list than is a complex filter like and, or
 
             if (((List<?>) filterValue).size() != 2) {
                 // TODO: Throw exception
             } else {
                 List<Event> eventList1 = resolveFilter((Map<String, Object>) ((List<?>) filterValue).get(0), eventList);
                 List<Event> eventList2 = resolveFilter((Map<String, Object>) ((List<?>) filterValue).get(1), eventList);
-                switch (filterKey){
+                switch (filterKey) {
                     case "$and":
                         eventList = listIntersection(eventList1, eventList2);
                         break;
@@ -196,12 +191,11 @@ public class EventController {
 
 
     // TODO: move to listHelper
-    private List<Event> listIntersection (List<Event> list1, List<Event> list2){
+    private List<Event> listIntersection(List<Event> list1, List<Event> list2) {
         return list1.stream().filter(list2::contains).collect(Collectors.toList());
     }
 
-    private List<Event> listUnion (List<Event> list1, List<Event> list2){
+    private List<Event> listUnion(List<Event> list1, List<Event> list2) {
         return Stream.concat(list1.stream(), list2.stream()).distinct().collect(Collectors.toList());
     }
-
 }

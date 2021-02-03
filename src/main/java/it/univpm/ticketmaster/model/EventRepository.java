@@ -2,32 +2,26 @@ package it.univpm.ticketmaster.model;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 
 import javax.naming.ConfigurationException;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import it.univpm.ticketmaster.exception.EventLoadingException;
 import it.univpm.ticketmaster.exception.HttpException;
 import it.univpm.ticketmaster.helper.ConfigurationHelper;
 import it.univpm.ticketmaster.helper.HttpHelper;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class EventRepository {
     private static final String BASE_URL = "https://app.ticketmaster.com/discovery/v2/events.json";
     private static final String API_KEY = "V3cp8w7Dn60dMykxGNFoAbOL6KtD8L07"; // Todo: Move this to a configuration or
-                                                                              // env file
+    // env file
 
     private static EventRepository instance;
     private final List<Event> eventList = new ArrayList<>();
@@ -52,36 +46,27 @@ public class EventRepository {
         }
     }
 
-    private void loadDataFromPages(String url, String country, int pageNumber, boolean iterate) throws EventLoadingException{
-        try{
-        String jsonString;
-        
-        jsonString = HttpHelper.get(url + "&page=" + pageNumber);
-       
-        JSONObject parsedData = new JSONObject(jsonString);
+    private void loadDataFromPages(String url, String country, int pageNumber, boolean iterate) throws EventLoadingException {
+        try {
+            String jsonString;
 
-        if(!parsedData.isNull("_embedded")){
-            JSONArray jsonEventList = parsedData.getJSONObject("_embedded").getJSONArray("events");
-            for (int i = 0; i < jsonEventList.length(); i++) {
-                try {
+            jsonString = HttpHelper.get(url + "&page=" + pageNumber);
+
+            JSONObject parsedData = new JSONObject(jsonString);
+
+            if (!parsedData.isNull("_embedded")) {
+                JSONArray jsonEventList = parsedData.getJSONObject("_embedded").getJSONArray("events");
+                for (int i = 0; i < jsonEventList.length(); i++) {
+
                     JSONObject jsonEvent = jsonEventList.getJSONObject(i);
 
-                    // Convert ISO 8601 dateTime String to Date Object
-                    TemporalAccessor temporalAccessor = DateTimeFormatter.ISO_INSTANT.parse(
-                            jsonEvent.getJSONObject("dates").getJSONObject("start").getString("dateTime")
-                    );
-                    Instant instant = Instant.from(temporalAccessor);
-                    Date startDate = Date.from(instant);
+                    LocalDate startDate = LocalDate.parse(jsonEvent.getJSONObject("dates").getJSONObject("start").getString("localDate"));
+                    LocalDate endDate;
 
-                    Date endDate;
                     if (jsonEvent.getJSONObject("dates").isNull("end")) { // If end date is null than endDate = StartDate
                         endDate = startDate; // No need to clone
                     } else {
-                        temporalAccessor = DateTimeFormatter.ISO_INSTANT.parse(
-                                jsonEvent.getJSONObject("dates").getJSONObject("end").getString("dateTime")
-                        );
-                        instant = Instant.from(temporalAccessor);
-                        endDate = Date.from(instant);
+                        endDate = startDate = LocalDate.parse(jsonEvent.getJSONObject("dates").getJSONObject("end").getString("localDate"));
                     }
 
                     Event event = new Event(
@@ -95,16 +80,14 @@ public class EventRepository {
                             country
                     );
                     this.eventList.add(event);
-                } catch (JSONException e) {
                 }
             }
-        }
 
-        if (iterate) {
-            if (pageNumber < parsedData.getJSONObject("page").getInt("totalPages") && pageNumber < 4) { // API Limits: Max paging depth (page * size) must be less than 1000
-                loadDataFromPages(url,country, pageNumber + 1, true);
+            if (iterate) {
+                if (pageNumber < parsedData.getJSONObject("page").getInt("totalPages") && pageNumber < 4) { // API Limits: Max paging depth (page * size) must be less than 1000
+                    loadDataFromPages(url, country, pageNumber + 1, true);
+                }
             }
-        }
         } catch (HttpException httpException) {
             throw new EventLoadingException(httpException.getMessage());
         }

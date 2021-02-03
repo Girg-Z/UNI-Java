@@ -1,9 +1,6 @@
 package it.univpm.ticketmaster.model;
 import java.lang.reflect.Field;
-import java.util.Date;
-import java.lang.reflect.*;
-import java.util.*;
-import java.io.*;
+import java.time.LocalDate;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -11,20 +8,20 @@ public class Event {
     private String id;
     private String name;
     private String type;
-    private Date startDateTime;
-    private Date endDateTime;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private String segment;
-    private String kind; // GENERE
+    private String kind;
     private String country;
 
     
 
-    public Event(String id, String name, String type, Date startDate, Date endDate, String segment, String kind,String country) {
+    public Event(String id, String name, String type, LocalDate startDate, LocalDate endDate, String segment, String kind,String country) {
         this.id = id;
         this.name = name;
         this.type = type;
-        this.startDateTime =  startDate;
-        this.endDateTime =  endDate;
+        this.startDate =  startDate;
+        this.endDate =  endDate;
         this.segment = segment;
         this.kind = kind;
         this.country=country;
@@ -35,40 +32,39 @@ public class Event {
         JSONArray ja = new JSONArray();
         for (int i=0;i<fields.length;i++){
             Field field = fields[i];
-            String attributo1, attributo2="", attributo3;
-            attributo1=field.getName();
+            String fieldName, fieldDescription="", fieldType;
+            fieldName=field.getName();
             switch(i){
                 case 0:
-                attributo2 = " codice identificazione ";
+                fieldDescription = " codice identificazione ";
                 break;
                 case 1:
-                attributo2 = " nome evento ";
+                fieldDescription = " nome evento ";
                 break;
                 case 2:
-                attributo2 = " tipo evento ";
+                fieldDescription = " tipo evento ";
                 break;
                 case 3:
-                attributo2 = " data inizio ";
+                fieldDescription = " data inizio ";
                 break;
                 case 4:
-                attributo2 = " data fine ";
+                fieldDescription = " data fine ";
                 break;
                 case 5:
-                attributo2 = " segmento ";
+                fieldDescription = " segmento ";
                 break;
                 case 6:
-                attributo2 = " genere evento ";
+                fieldDescription = " genere evento ";
                 break;
                 case 7:
-                attributo2 = " Stato ";
+                fieldDescription = " Stato ";
                 break;
             };
-            attributo3 = (String) field.getType().getSimpleName(); 
-        //    array[i] = new MetaData(attributo1,attributo2,attributo3);
+            fieldType = (String) field.getType().getSimpleName();
             JSONObject jo = new JSONObject();
-            jo.put("Alias", attributo1);
-            jo.put("Sourcefield", attributo2);
-            jo.put("Type", attributo3);
+            jo.put("Alias", fieldName);
+            jo.put("Sourcefield", fieldDescription);
+            jo.put("Type", fieldType);
 
             ja.put(jo);
           
@@ -86,8 +82,8 @@ public class Event {
         jo.put("id", id);
         jo.put("name", name);
         jo.put("Type", type);
-        jo.put("startDateTime", startDateTime);
-        jo.put("endDateTime", endDateTime);
+        jo.put("startDateTime", startDate);
+        jo.put("endDateTime", endDate);
         jo.put("segment", segment);
         jo.put("kind", kind);
         jo.put("country", country);
@@ -134,20 +130,20 @@ public class Event {
         this.type = type;
     }
 
-    public Date getStartDateTime() {
-        return this.startDateTime;
+    public LocalDate getStartDate() {
+        return this.startDate;
     }
 
-    public void setStartDateTime(Date startDateTime) {
-        this.startDateTime = startDateTime;
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
     }
 
-    public Date getEndDateTime() {
-        return this.endDateTime;
+    public LocalDate getEndDate() {
+        return this.endDate;
     }
 
-    public void setEndDateTime(Date endDateTime) {
-        this.endDateTime = endDateTime;
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
     }
 
     public String getSegment() {

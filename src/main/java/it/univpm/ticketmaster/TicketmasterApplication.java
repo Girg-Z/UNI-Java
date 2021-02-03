@@ -1,7 +1,6 @@
 package it.univpm.ticketmaster;
 
 import it.univpm.ticketmaster.exception.EventLoadingException;
-import it.univpm.ticketmaster.exception.HttpException;
 import it.univpm.ticketmaster.model.EventRepository;
 
 import javax.naming.ConfigurationException;
@@ -15,7 +14,7 @@ public class TicketmasterApplication {
 	public static void main(String[] args) throws ConfigurationException {
 		System.out.println("Started events loading...");
 		try{
-		EventRepository.getInstance().loadData();
+			EventRepository.getInstance().loadData();
 		} catch(EventLoadingException eventLoadingException){
 			System.out.println(eventLoadingException.getMessage());
 		}
