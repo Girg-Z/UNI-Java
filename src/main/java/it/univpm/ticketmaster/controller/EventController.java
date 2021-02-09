@@ -4,6 +4,8 @@ package it.univpm.ticketmaster.controller;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -150,10 +152,13 @@ public class EventController {
         }
 
         final JSONArray jsonArray = new JSONArray();
+        final JSONObject jsonObject = new JSONObject();
         for (Event event : eventList) {
             jsonArray.put(event.toJsonObject());
         }
-        return jsonArray.toString();
+        jsonObject.put("events", jsonArray);
+        jsonObject.put("totalEvents", eventList.size());
+        return jsonObject.toString();
     }
 
     private List<Event> resolveFilter(Map<String, Object> filter, List<Event> eventList) {
@@ -165,7 +170,6 @@ public class EventController {
             eventList = EventRepository.filterByField(filterKey, (String) filterValue, eventList);
 
         } else if (filterValue instanceof List) {// If filterValue is a list than is a complex filter like and, or
-
             if (((List<?>) filterValue).size() != 2) {
                 // TODO: Throw exception
             } else {
@@ -183,8 +187,15 @@ public class EventController {
                 }
             }
 
+        } else if (filterValue instanceof Map) { // If filterValue is a map than is a conditional filter like gt, in
+            final Map.Entry<String, Object> conditionalFilter = ((Map<String, Object>) filterValue).entrySet().iterator().next();
+            final String conditionalFilterType = conditionalFilter.getKey();
+            final Object conditionalFilterValue = conditionalFilter.getValue();
+
+            final Predicate<Event> predicate = EventRepository.getConditionalFilterPredicate(filterKey, conditionalFilterValue, conditionalFilterType);
+            eventList = eventList.stream().filter(predicate).collect(Collectors.toList());
         } else {
-            // TODO: Add exception
+            // TODO: Not a valid filter
         }
         return eventList;
     }

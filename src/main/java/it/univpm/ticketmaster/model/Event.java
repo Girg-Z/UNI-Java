@@ -82,8 +82,8 @@ public class Event {
         jo.put("id", id);
         jo.put("name", name);
         jo.put("Type", type);
-        jo.put("startDateTime", startDate);
-        jo.put("endDateTime", endDate);
+        jo.put("startDate", startDate);
+        jo.put("endDate", endDate);
         jo.put("segment", segment);
         jo.put("kind", kind);
         jo.put("country", country);
