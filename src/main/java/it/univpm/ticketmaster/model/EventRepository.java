@@ -12,6 +12,7 @@ import java.util.function.Predicate;
 
 import javax.naming.ConfigurationException;
 
+import it.univpm.ticketmaster.exception.FilterException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -19,13 +20,8 @@ import it.univpm.ticketmaster.exception.EventLoadingException;
 import it.univpm.ticketmaster.exception.HttpException;
 import it.univpm.ticketmaster.helper.ConfigurationHelper;
 import it.univpm.ticketmaster.helper.HttpHelper;
-import org.springframework.validation.ObjectError;
 
 public class EventRepository {
-    private static final String BASE_URL = "https://app.ticketmaster.com/discovery/v2/events.json";
-    private static final String API_KEY = "V3cp8w7Dn60dMykxGNFoAbOL6KtD8L07"; // Todo: Move this to a configuration or
-    // env file
-
     private static EventRepository instance;
     private final List<Event> eventList = new ArrayList<>();
 
@@ -43,7 +39,7 @@ public class EventRepository {
     public void loadData() throws EventLoadingException, ConfigurationException {
         String[] countryList = ConfigurationHelper.getCountryList();
         for (String country : countryList) {
-            String url = BASE_URL + "?apikey=" + API_KEY + "&size=200";
+            String url = ConfigurationHelper.getApiUrl() + "?apikey=" + ConfigurationHelper.getApiKey() + "&size=200";
             url += "&countryCode=" + country;
             loadDataFromPages(url, country, 0, true);
         }
@@ -100,10 +96,7 @@ public class EventRepository {
         return eventList;
     }
 
-
-    //Todo: Add Exceptions
-    public static List<Event> filterByField(String field, String value, List<Event> eventList) {
-
+    public List<Event> filterByField(String field, String value, List<Event> eventList) throws FilterException {
         List<Event> matchList = new ArrayList<>();
         try {
             PropertyDescriptor pd = new PropertyDescriptor(field, Event.class);
@@ -116,19 +109,22 @@ public class EventRepository {
                 }
             }
         } catch (IllegalAccessException | InvocationTargetException | IntrospectionException e) {
-            e.printStackTrace();
+            throw new FilterException("The field `" + field + "` doesn't exist or isn't filterable");
         }
         return matchList;
     }
 
-    public static Predicate<Event> getConditionalFilterPredicate(String field, Object value, String conditionalFilterType) {
+    public Predicate<Event> getConditionalFilterPredicate(String field, Object value, String conditionalFilterType) throws FilterException {
         try {
             final PropertyDescriptor pd = new PropertyDescriptor(field, Event.class);
             final Method getter = pd.getReadMethod();
-
             LocalDate date;
+
+            final List<String> filterValues;
+
             switch (conditionalFilterType) {
                 case "$gt":
+                    checkComparableField(field);
                     date = getDateFromObject(value);
                     return (event) -> {
                         try {
@@ -138,6 +134,7 @@ public class EventRepository {
                         }
                     };
                 case "$gte":
+                    checkComparableField(field);
                     date = getDateFromObject(value);
                     return (event) -> {
                         try {
@@ -148,6 +145,7 @@ public class EventRepository {
                         }
                     };
                 case "$lt":
+                    checkComparableField(field);
                     date = getDateFromObject(value);
                     return (event) -> {
                         try {
@@ -157,6 +155,7 @@ public class EventRepository {
                         }
                     };
                 case "$lte":
+                    checkComparableField(field);
                     date = getDateFromObject(value);
                     return (event) -> {
                         try {
@@ -171,7 +170,7 @@ public class EventRepository {
                     if (value instanceof List) {
                         betweenDates = (List<String>) value;
                         if (betweenDates.size() != 2) {
-                            //TODO: Throw Exception
+                            throw new FilterException("The value provided in the $bt filter is incorrect: the dates provided must be 2");
                         }
                     }
                     final List<String> finalBetweenDates = betweenDates; // Lambda function need final variable
@@ -187,7 +186,7 @@ public class EventRepository {
                     };
                 case "$not":
                     if (!(value instanceof String)){
-                        // TODO: Exception
+                        throw new FilterException("The value provided in the $not filter is incorrect");
                     }
                     return (event) -> {
                         try {
@@ -199,12 +198,16 @@ public class EventRepository {
                     };
                 case "$in":
                     if (!(value instanceof List)){
-                        // TODO: Exception
+                        throw new FilterException("The value provided in the $in filter is incorrect");
+                    }
+                    try {
+                        filterValues = (List<String>) value; // check if it's a list of string
+                    } catch (ClassCastException  e) {
+                        throw new FilterException("The value provided in the $in filter is incorrect: must be a list of strings");
                     }
                     return (event) -> {
                         try {
                             final Object eventAttribute = getter.invoke(event);
-                            final List<String> filterValues = (List<String>) value;
                             for (Object filterValue : filterValues)
                             {
                                 if (eventAttribute.toString().equals(filterValue)){
@@ -218,12 +221,16 @@ public class EventRepository {
                     };
                 case "$nin":
                     if (!(value instanceof List)){
-                        // TODO: Exception
+                        throw new FilterException("The value provided in the $in filter is incorrect");
+                    }
+                    try {
+                        filterValues = (List<String>) value; // check if it's a list of string
+                    } catch (ClassCastException  e) {
+                        throw new FilterException("The value provided in the $in filter is incorrect: must be a list of strings");
                     }
                     return (event) -> {
                         try {
                             final Object eventAttribute = getter.invoke(event);
-                            final List<String> filterValues = (List<String>) value;
                             for (Object filterValue : filterValues)
                             {
                                 if (eventAttribute.toString().equals(filterValue)){
@@ -236,21 +243,28 @@ public class EventRepository {
                         }
                     };
                 default:
-                    // TODO: throw exception
+                    throw new FilterException(conditionalFilterType + " is not a valid filter type");
             }
         } catch (IntrospectionException e) {
-            e.printStackTrace();
+            throw new FilterException("The field `" + field + "` doesn't exist or isn't filterable");
         }
-        return null; // TODO: Remove
     }
 
-    private static LocalDate getDateFromObject(Object object) {
+    private LocalDate getDateFromObject(Object object) throws FilterException {
         if (object instanceof String) {
-            return LocalDate.parse((String) object);
+            try {
+                return LocalDate.parse((String) object);
+            } catch (DateTimeParseException e){
+                throw new FilterException(object + " is not a valid date");
+            }
         } else {
-            // TODO: throw exception
-            return null;
+            throw new FilterException("Value of filter cannot be converted to date, only dates can be used with `$gt, $gte, $lt, $lte, $bt`");
         }
     }
 
+    private void checkComparableField(String field) throws FilterException {
+        if (!Event.isFieldComparable(field)){
+            throw new FilterException("Only dates can be used with `$gt, $gte, $lt, $lte, $bt`");
+        }
+    }
 }

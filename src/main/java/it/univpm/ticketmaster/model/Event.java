@@ -1,6 +1,8 @@
 package it.univpm.ticketmaster.model;
 import java.lang.reflect.Field;
 import java.time.LocalDate;
+import java.util.Arrays;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -14,7 +16,7 @@ public class Event {
     private String kind;
     private String country;
 
-    
+    public static final String[] COMPARABLE_FIELDS = new String[]{"startdate", "enddate"};
 
     public Event(String id, String name, String type, LocalDate startDate, LocalDate endDate, String segment, String kind,String country) {
         this.id = id;
@@ -163,7 +165,8 @@ public class Event {
     }
 
 
-
-   
-
+    public static boolean isFieldComparable(String field){
+        field = field.toLowerCase();
+        return Arrays.asList(COMPARABLE_FIELDS).contains(field);
+    }
 }

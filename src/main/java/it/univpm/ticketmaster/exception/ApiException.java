@@ -3,7 +3,7 @@ package it.univpm.ticketmaster.exception;
 import org.json.JSONObject;
 
 public abstract class ApiException extends Exception {
-    private int statusCode;
+    private final int statusCode;
 
 
     public ApiException(int statusCode, String msg) {

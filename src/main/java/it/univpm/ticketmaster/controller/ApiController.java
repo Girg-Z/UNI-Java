@@ -15,7 +15,7 @@ import it.univpm.ticketmaster.model.Event;
 
 @RestController
 public class ApiController {
-    private EventController eventController;
+    private final EventController eventController;
 
     public ApiController() {
         this.eventController = new EventController();
@@ -42,9 +42,13 @@ public class ApiController {
 
     @GetMapping("/events")
     public ResponseEntity<String> events(@RequestParam(required = false) String filter) {
-        final HttpHeaders httpHeaders= new HttpHeaders();
+        final HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-        return new ResponseEntity<>(eventController.events(filter), httpHeaders, HttpStatus.OK);
+        try {
+            return new ResponseEntity<>(eventController.events(filter), httpHeaders, HttpStatus.OK);
+        } catch (FilterException filterException) {
+            return new ResponseEntity<String>(filterException.getErrorJson(), httpHeaders, HttpStatus.BAD_REQUEST);
+        }
     }
 
    

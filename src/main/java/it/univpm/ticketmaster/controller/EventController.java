@@ -4,13 +4,13 @@ package it.univpm.ticketmaster.controller;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.naming.ConfigurationException;
 
+import it.univpm.ticketmaster.helper.JSONHelper;
+import it.univpm.ticketmaster.helper.ListHelper;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,7 +38,7 @@ public class EventController {
         if (filter != null) {
             JSONObject parsedFilter = new JSONObject(filter);
             if (!parsedFilter.isNull("countries")) {
-                countries = JSONArrayToStringArray(parsedFilter.getJSONArray("countries"));
+                countries = JSONHelper.JSONArrayToStringArray(parsedFilter.getJSONArray("countries"));
             }
             if (!parsedFilter.isNull("period")) {
                 try {
@@ -135,19 +135,15 @@ public class EventController {
         return 0;
     }
 
-    // Todo: Move to jsonHelper
-    private String[] JSONArrayToStringArray(JSONArray jsonArray) {
-        String[] array = new String[jsonArray.length()];
-        for (int i = 0; i < jsonArray.length(); i++) {
-            array[i] = jsonArray.getString(i);
-        }
-        return array;
-    }
-
-    public String events(String filter) {
+    public String events(String filter) throws FilterException {
         List<Event> eventList = eventRepository.getAll();
         if (filter != null) {
-            final JSONObject parsedFilter = new JSONObject(filter);
+            final JSONObject parsedFilter;
+            try {
+                parsedFilter = new JSONObject(filter);
+            } catch (JSONException jsonException) {
+                throw new FilterException("Filter must be a valid json");
+            }
             eventList = resolveFilter(parsedFilter.toMap(), eventList);
         }
 
@@ -161,29 +157,29 @@ public class EventController {
         return jsonObject.toString();
     }
 
-    private List<Event> resolveFilter(Map<String, Object> filter, List<Event> eventList) {
+    private List<Event> resolveFilter(Map<String, Object> filter, List<Event> eventList) throws FilterException {
         final Map.Entry<String, Object> filterEntry = filter.entrySet().iterator().next();
         final String filterKey = filterEntry.getKey();
         final Object filterValue = filterEntry.getValue();
 
         if (filterValue instanceof String) { // If filterValue is a string than list need to be filtered by a simple field
-            eventList = EventRepository.filterByField(filterKey, (String) filterValue, eventList);
+            eventList = eventRepository.filterByField(filterKey, (String) filterValue, eventList);
 
         } else if (filterValue instanceof List) {// If filterValue is a list than is a complex filter like and, or
             if (((List<?>) filterValue).size() != 2) {
-                // TODO: Throw exception
+                throw new FilterException("$and, $or filters must have 2 components");
             } else {
                 List<Event> eventList1 = resolveFilter((Map<String, Object>) ((List<?>) filterValue).get(0), eventList);
                 List<Event> eventList2 = resolveFilter((Map<String, Object>) ((List<?>) filterValue).get(1), eventList);
                 switch (filterKey) {
                     case "$and":
-                        eventList = listIntersection(eventList1, eventList2);
+                        eventList = ListHelper.intersection(eventList1, eventList2);
                         break;
                     case "$or":
-                        eventList = listUnion(eventList1, eventList2);
+                        eventList = ListHelper.union(eventList1, eventList2);
                         break;
                     default:
-                        // TODO: throw exception
+                        throw new FilterException(filterKey + " is not a valid filter type");
                 }
             }
 
@@ -192,21 +188,11 @@ public class EventController {
             final String conditionalFilterType = conditionalFilter.getKey();
             final Object conditionalFilterValue = conditionalFilter.getValue();
 
-            final Predicate<Event> predicate = EventRepository.getConditionalFilterPredicate(filterKey, conditionalFilterValue, conditionalFilterType);
+            final Predicate<Event> predicate = eventRepository.getConditionalFilterPredicate(filterKey, conditionalFilterValue, conditionalFilterType);
             eventList = eventList.stream().filter(predicate).collect(Collectors.toList());
         } else {
-            // TODO: Not a valid filter
+            throw new FilterException("Invalid filter structure");
         }
         return eventList;
-    }
-
-
-    // TODO: move to listHelper
-    private List<Event> listIntersection(List<Event> list1, List<Event> list2) {
-        return list1.stream().filter(list2::contains).collect(Collectors.toList());
-    }
-
-    private List<Event> listUnion(List<Event> list1, List<Event> list2) {
-        return Stream.concat(list1.stream(), list2.stream()).distinct().collect(Collectors.toList());
     }
 }

@@ -19,10 +19,18 @@ public class ConfigurationHelper {
         }
     }
 
-    // Todo: Move
     public static String[] getCountryList() throws ConfigurationException {
         Properties properties = getConfiguration();
         return properties.getProperty("ticketmaster.countryList").split(",");
     }
 
+    public static String getApiKey() throws ConfigurationException {
+        Properties properties = getConfiguration();
+        return properties.getProperty("ticketmaster.apiKey");
+    }
+
+    public static String getApiUrl() throws ConfigurationException {
+        Properties properties = getConfiguration();
+        return properties.getProperty("ticketmaster.apiUrl");
+    }
 }
