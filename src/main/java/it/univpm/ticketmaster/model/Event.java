@@ -6,7 +6,7 @@ import java.util.Arrays;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class Event {
+public class Event implements EntityInterface{
     private String id;
     private String name;
     private String type;
@@ -122,10 +122,6 @@ public class Event {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String Type() {
-        return this.type;
     }
 
     public void setType(String type) {

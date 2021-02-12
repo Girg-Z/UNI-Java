@@ -16,12 +16,12 @@ import it.univpm.ticketmaster.exception.FilterException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import it.univpm.ticketmaster.exception.EventLoadingException;
+import it.univpm.ticketmaster.exception.DataLoadingException;
 import it.univpm.ticketmaster.exception.HttpException;
 import it.univpm.ticketmaster.helper.ConfigurationHelper;
 import it.univpm.ticketmaster.helper.HttpHelper;
 
-public class EventRepository {
+public class EventRepository implements DataRepositoryInterface{
     private static EventRepository instance;
     private final List<Event> eventList = new ArrayList<>();
 
@@ -36,7 +36,7 @@ public class EventRepository {
         return instance;
     }
 
-    public void loadData() throws EventLoadingException, ConfigurationException {
+    public void loadData() throws DataLoadingException, ConfigurationException {
         String[] countryList = ConfigurationHelper.getCountryList();
         for (String country : countryList) {
             String url = ConfigurationHelper.getApiUrl() + "?apikey=" + ConfigurationHelper.getApiKey() + "&size=200";
@@ -45,7 +45,7 @@ public class EventRepository {
         }
     }
 
-    private void loadDataFromPages(String url, String country, int pageNumber, boolean iterate) throws EventLoadingException {
+    private void loadDataFromPages(String url, String country, int pageNumber, boolean iterate) throws DataLoadingException {
         try {
             String jsonString;
 
@@ -88,7 +88,7 @@ public class EventRepository {
                 }
             }
         } catch (HttpException httpException) {
-            throw new EventLoadingException(httpException.getMessage());
+            throw new DataLoadingException(httpException.getMessage());
         }
     }
 

@@ -1,6 +1,6 @@
 package it.univpm.ticketmaster;
 
-import it.univpm.ticketmaster.exception.EventLoadingException;
+import it.univpm.ticketmaster.exception.DataLoadingException;
 import it.univpm.ticketmaster.model.EventRepository;
 
 import javax.naming.ConfigurationException;
@@ -15,8 +15,8 @@ public class TicketmasterApplication {
 		System.out.println("Started events loading...");
 		try{
 			EventRepository.getInstance().loadData();
-		} catch(EventLoadingException eventLoadingException){
-			System.out.println(eventLoadingException.getMessage());
+		} catch(DataLoadingException dataLoadingException){
+			System.out.println(dataLoadingException.getMessage());
 		}
 		System.out.println("Done! " + EventRepository.getInstance().getAll().size() + " events loaded");
 		SpringApplication.run(TicketmasterApplication.class, args);
