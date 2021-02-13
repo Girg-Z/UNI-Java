@@ -43,3 +43,14 @@ Infine basterà avviare il web-server.
 
 ## Diagrammi UML
 
+*Class Diagram*
+
+![alt text](https://raw.githubusercontent.com/Girg-Z/UNI-Java/main/img/NewModel%20Class%20Diagram.jpg)
+
+*Use Case Diagram*
+
+
+
+*Sequance Diagram*
+
+
