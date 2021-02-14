@@ -24,7 +24,7 @@ public class FilterTest {
 
     @Test
     @DisplayName("Corretta generazione della funzione STATS")
-    void test1(){
+    void statsTest(){
         assertThrows(FilterException.class, () -> {
             eventController.stats("{\"countries\": [\"uk\", \"it\"],\"period\": 5}");
         });
