@@ -21,6 +21,9 @@ import it.univpm.ticketmaster.exception.HttpException;
 import it.univpm.ticketmaster.helper.ConfigurationHelper;
 import it.univpm.ticketmaster.helper.HttpHelper;
 
+/**
+ * The event repository
+ */
 public class EventRepository implements DataRepositoryInterface{
     private static EventRepository instance;
     private final List<Event> eventList = new ArrayList<>();
@@ -29,6 +32,9 @@ public class EventRepository implements DataRepositoryInterface{
         // private to prevent anyone else from instantiating (Singleton pattern)
     }
 
+    /**
+     * @return The eventRepository instance
+     */
     public static EventRepository getInstance() {
         if (instance == null) {
             instance = new EventRepository();
@@ -36,6 +42,11 @@ public class EventRepository implements DataRepositoryInterface{
         return instance;
     }
 
+    /**
+     * Load all the events from the ticketmaster API
+     * @throws DataLoadingException If there is an error loading the data
+     * @throws ConfigurationException if there is an error fetching the application configuration
+     */
     public void loadData() throws DataLoadingException, ConfigurationException {
         String[] countryList = ConfigurationHelper.getCountryList();
         for (String country : countryList) {
@@ -45,6 +56,13 @@ public class EventRepository implements DataRepositoryInterface{
         }
     }
 
+    /**
+     * @param url url
+     * @param country the country to load
+     * @param pageNumber the page number
+     * @param iterate if to iterate until the event are over
+     * @throws DataLoadingException If there is an error loading the data
+     */
     private void loadDataFromPages(String url, String country, int pageNumber, boolean iterate) throws DataLoadingException {
         try {
             String jsonString;
@@ -92,10 +110,21 @@ public class EventRepository implements DataRepositoryInterface{
         }
     }
 
+    /**
+     * @return All the vents
+     */
     public List<Event> getAll() {
         return eventList;
     }
 
+    /**
+     * Filter the event list by a filed (the comparisons are of type equals)
+     * @param field the field name to filter
+     * @param value the value of the field to filter
+     * @param eventList the event list which to apply the filter
+     * @return the event list filtered
+     * @throws FilterException if filter is malformed or invalid
+     */
     public List<Event> filterByField(String field, String value, List<Event> eventList) throws FilterException {
         List<Event> matchList = new ArrayList<>();
         try {
@@ -114,6 +143,14 @@ public class EventRepository implements DataRepositoryInterface{
         return matchList;
     }
 
+    /**
+     * Get the predicate for filtering the list using Java 8 Stream API
+     * @param field the field name to filter
+     * @param value the value of the filed to filter
+     * @param conditionalFilterType Type of the filter to apply
+     * @return A predicate (lambda function with boolean return type)
+     * @throws FilterException if filter is malformed or invalid
+     */
     public Predicate<Event> getConditionalFilterPredicate(String field, Object value, String conditionalFilterType) throws FilterException {
         try {
             final PropertyDescriptor pd = new PropertyDescriptor(field, Event.class);
@@ -250,6 +287,12 @@ public class EventRepository implements DataRepositoryInterface{
         }
     }
 
+    /**
+     * Get Local Date from object
+     * @param object the object to convert
+     * @return Date
+     * @throws FilterException If it's impossible to convert object to LocalDate
+     */
     private LocalDate getDateFromObject(Object object) throws FilterException {
         if (object instanceof String) {
             try {

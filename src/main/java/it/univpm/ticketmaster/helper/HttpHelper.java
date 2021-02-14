@@ -9,8 +9,17 @@ import java.net.URLConnection;
 
 import it.univpm.ticketmaster.exception.HttpException;
 
+/**
+ * Perform basic HTTP requests
+ */
 public class HttpHelper{
-    
+
+	/**
+	 * Perform HTTP get request
+	 * @param url url
+	 * @return string body of the response
+	 * @throws HttpException if there is an error in the http request
+	 */
     public static String get (String url) throws HttpException{
 		String data = "";
 		String line = "";

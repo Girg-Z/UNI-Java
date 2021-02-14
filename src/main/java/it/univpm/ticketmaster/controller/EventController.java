@@ -14,14 +14,15 @@ import it.univpm.ticketmaster.helper.ListHelper;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.web.bind.annotation.RestController;
 
 import it.univpm.ticketmaster.exception.FilterException;
 import it.univpm.ticketmaster.helper.ConfigurationHelper;
 import it.univpm.ticketmaster.model.Event;
 import it.univpm.ticketmaster.model.EventRepository;
 
-@RestController
+/**
+ * Perform operations on events data
+ */
 public class EventController {
     private final EventRepository eventRepository;
 
@@ -29,6 +30,12 @@ public class EventController {
         this.eventRepository = EventRepository.getInstance();
     }
 
+    /**
+     * @param filter Json filter
+     * @return events stats for each country
+     * @throws FilterException if filter is malformed or invalid
+     * @throws ConfigurationException if there is an error fetching the application configuration
+     */
     public String stats(String filter) throws FilterException, ConfigurationException {
 
         final List<Event> eventList = eventRepository.getAll();
@@ -125,6 +132,11 @@ public class EventController {
         return datesArray;
     }
 
+    /**
+     * @param event Event
+     * @param period Period length in days
+     * @return The index of the period in the periods array
+     */
     private int getEventPeriodNumber(Event event, int period) {
         LocalDate[] datesArray = getDatesArray();
         for (int i = 0; i < datesArray.length; i++) {
@@ -135,6 +147,11 @@ public class EventController {
         return 0;
     }
 
+    /**
+     * @param filter Json filter (optional)
+     * @return Json event list
+     * @throws FilterException if filter is malformed or invalid
+     */
     public String events(String filter) throws FilterException {
         List<Event> eventList = eventRepository.getAll();
         if (filter != null) {
@@ -157,6 +174,12 @@ public class EventController {
         return jsonObject.toString();
     }
 
+    /**
+     * @param filter filter
+     * @param eventList the event list which to apply the filter
+     * @return the event list filtered
+     * @throws FilterException if filter is malformed or invalid
+     */
     private List<Event> resolveFilter(Map<String, Object> filter, List<Event> eventList) throws FilterException {
         final Map.Entry<String, Object> filterEntry = filter.entrySet().iterator().next();
         final String filterKey = filterEntry.getKey();
