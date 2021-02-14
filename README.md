@@ -54,3 +54,38 @@ Infine basterà avviare il web-server.
 *Sequance Diagram*
 
 
+
+@startuml
+participant Actor
+Actor -> ApiController : stats
+activate ApiController
+ApiController -> EventController : stats
+activate EventController
+EventController -> JSONHelper : JSONArrayToStringArray
+activate JSONHelper
+JSONHelper --> EventController
+deactivate JSONHelper
+EventController -> FilterException : new
+activate FilterException
+FilterException -> ApiException : new
+activate ApiException
+ApiException --> FilterException
+deactivate ApiException
+FilterException --> EventController
+deactivate FilterException
+EventController -> FilterException : new
+activate FilterException
+FilterException -> ApiException : new
+activate ApiException
+ApiException --> FilterException
+deactivate ApiException
+FilterException --> EventController
+deactivate FilterException
+EventController -> EventController : getEventPeriodNumber
+activate EventController
+EventController --> EventController
+deactivate EventController
+EventController --> ApiController
+deactivate EventController
+return
+@enduml
