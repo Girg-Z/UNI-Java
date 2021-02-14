@@ -52,5 +52,3 @@ Infine basterà avviare il web-server.
 
 
 *Sequance Diagram*
-
-

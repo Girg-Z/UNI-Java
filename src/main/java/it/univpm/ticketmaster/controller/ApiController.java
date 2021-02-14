@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 import it.univpm.ticketmaster.exception.FilterException;
 import it.univpm.ticketmaster.model.Event;
 
+/**
+ * Main API Rest controller
+ */
 @RestController
 public class ApiController {
     private final EventController eventController;

@@ -6,6 +6,9 @@ import java.util.Arrays;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+/**
+ * Event entity
+ */
 public class Event implements EntityInterface{
     private String id;
     private String name;
@@ -29,6 +32,9 @@ public class Event implements EntityInterface{
         this.country=country;
     }
 
+    /**
+     * @return Metadata of event class
+     */
     public static String getMetaData(){
         Field[] fields = Event.class.getDeclaredFields();
         JSONArray ja = new JSONArray();
@@ -78,6 +84,10 @@ public class Event implements EntityInterface{
         
     }
 
+    /**
+     * Convert event into a JSONObject
+     * @return JSONObject representation of event
+     */
     public JSONObject toJsonObject(){
         JSONObject jo = new JSONObject();
         jo.put("country", country);
@@ -161,6 +171,11 @@ public class Event implements EntityInterface{
     }
 
 
+    /**
+     * Check if a field is comparable (with $gt, $gte etc...)
+     * @param field The filed to validate
+     * @return if the field is comparable
+     */
     public static boolean isFieldComparable(String field){
         field = field.toLowerCase();
         return Arrays.asList(COMPARABLE_FIELDS).contains(field);
