@@ -23,15 +23,17 @@ public class FilterTest {
 
 
     @Test
-    @DisplayName("Corretta generazione della funzione STATS")
+    @DisplayName("Correct generation of filterException in events stats")
     void statsTest(){
         assertThrows(FilterException.class, () -> {
             eventController.stats("{\"countries\": [\"uk\", \"it\"],\"period\": 5}");
         });
     }
     @Test
-    @DisplayName("Corretta generazione della funzione ")
-    void test2(){
-
+    @DisplayName("Correct generation of filterException in events list")
+    void eventsTest(){
+        assertThrows(FilterException.class, () -> {
+            eventController.events("{\"$or\": [{\"startDate\": \"DE\"}]}");
+        });
     }
 }
