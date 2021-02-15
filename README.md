@@ -1,9 +1,4 @@
-# <center> Progetto programmazione ad oggetti </center>
-<br>
-
-#  TICKETMASTER
-<br>
-
+# <center> Progetto programmazione ad oggetti - TICKETMASTER </center>
 
 
 ## Lista contenuti
@@ -18,6 +13,8 @@
     * [Metadata](#metadata)
     * [Stats](#stats)
     * [Events](#events)
+      * [Operatori Logici](#operatori-logici)
+- [Autori](#autori)
 
 
 <br>
