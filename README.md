@@ -15,6 +15,7 @@
     * [Events](#events)
       * [Operatori Logici](#operatori-logici)
 - [Autori](#autori)
+- [Javadoc](#Javadoc)
 
 
 <br>
@@ -217,8 +218,12 @@ Esempio di output:
   ]
 }
 ```
+## Javadoc
+Javadoc disponibile al seguente link:
+https://girg-z.github.io/UNI-Java/
+
 
 ## Autori
-progetto sviluppato in modo equo da:
+Progetto sviluppato in modo equo da:
 - Diego Manzo
 - Giorgio Zanchetti
