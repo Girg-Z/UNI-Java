@@ -14,8 +14,8 @@
     * [Stats](#stats)
     * [Events](#events)
       * [Operatori Logici](#operatori-logici)
+- [Javadoc](#javadoc)
 - [Autori](#autori)
-- [Javadoc](#Javadoc)
 
 
 <br>

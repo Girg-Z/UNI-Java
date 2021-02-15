@@ -26,7 +26,7 @@ public class FilterTest {
     @DisplayName("Correct generation of filterException in events stats")
     void statsTest(){
         assertThrows(FilterException.class, () -> {
-            eventController.stats("{\"countries\": [\"uk\", \"it\"],\"period\": 5}");
+            eventController.stats("{\"countries\": [\"uk\", \"it\"],\"period\": -5}");
         });
     }
     @Test
